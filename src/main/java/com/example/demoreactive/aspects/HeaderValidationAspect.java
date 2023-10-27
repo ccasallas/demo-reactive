@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Aspect
 @Component
@@ -19,7 +20,8 @@ public class HeaderValidationAspect {
         if (request.getHeaders().containsKey("x-header")) {
             String headerValue = request.getHeaders().getFirst("x-header");
             if (validHeader(headerValue)) {
-                return joinPoint.proceed();
+                Mono<?> resultMono = (Mono<?>) joinPoint.proceed();
+                return resultMono.doOnNext( value -> System.out.println("response: " + value));
             } else {
                 throw new InvalidHeaderException("Invalid header");
             }
